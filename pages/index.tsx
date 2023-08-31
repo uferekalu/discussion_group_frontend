@@ -1,39 +1,81 @@
+import React, { useEffect, useState } from "react";
 import { Meta } from "@/components/layout/Meta";
 import { AppConfig } from "@/utils/AppConfig";
 import { Background } from "@/components/background/Background";
 import { Section } from "@/components/layout/Section";
 import { Navbar } from "@/components/navigation/Navbar";
 import { Logo } from "@/components/logo/Logo";
-import Link from "next/link";
 import { Footer } from "@/components/footer";
-import { NavbarMobile } from "@/components/navigation/NavbarMobile";
+import { Button } from "@/components/button/Button";
+import RegisterModal from "@/components/auth/RegisterModal";
+import LoginModal from "@/components/auth/LoginModal";
+import { useRouter } from "next/router";
+import { HeaderShrinker } from "@/utils/HeaderShrinker";
+import NavbarMobile from "@/components/navigation/NavbarMobile";
 
 export default function Home() {
+  const router = useRouter()
+  const [isRegisterModalOpen, setIsRegisterModalOpen] =
+    useState<boolean>(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/forum");
+    }
+  }, [router]);
+
+  HeaderShrinker()
+
+  const handleOpenRegisterModal = () => {
+    setIsRegisterModalOpen(true);
+  };
+
+  const handleOpenLoginModal = () => {
+    setIsLoginModalOpen(true);
+  };
+
+  const handleCloseLoginModal = () => {
+    setIsLoginModalOpen(false);
+  };
+
+  const handleCloseRegisterModal = () => {
+    setIsRegisterModalOpen(false);
+  };
   return (
     <div className="text-gray-600 antialiased">
       <Meta title={AppConfig.title} description={AppConfig.description} />
-      <Background color="bg-gray-100" bgImg imgUrl='url("/background4.jpeg")'>
-        <Section width="w-full" height="h-24" yPadding="py-6">
-          <Navbar logo={<Logo xl />} xsMenu={<NavbarMobile />}>
-            <li>
-              <Link
-                className="bg-pink-500 border rounded-lg p-3 ease-in duration-300 text-white font-medium hover:bg-yellow-600 hover:text-black hover:border-none"
-                href="/register"
-              >
-                Sign Up
-              </Link>
-            </li>
-            <li>
-              <Link
-                className="bg-gray-950 border rounded-lg p-3 ease-in duration-300 text-white font-medium hover:bg-white hover:text-black hover:border-none"
-                href="/login"
-              >
-                Login
-              </Link>
-            </li>
-          </Navbar>
-        </Section>
-      </Background>
+      <Section width="w-full" height="h-24" yPadding="py-6">
+        <Navbar
+          logo={<Logo xl />}
+          xsMenu={
+            <NavbarMobile
+              handleOpenRegisterModal={handleOpenRegisterModal}
+              handleCloseRegisterModal={handleCloseRegisterModal}
+              handleOpenLoginModal={handleOpenLoginModal}
+              handleCloseLoginModal={handleCloseLoginModal}
+            />
+          }
+        >
+          <li>
+            <Button
+              id="signup"
+              text="Sign Up"
+              onClick={handleOpenRegisterModal}
+              style="bg-pink-500 border rounded-lg p-3 text-white text-sm font-medium hover:bg-yellow-600 hover:text-black hover:border-none"
+            />
+          </li>
+          <li>
+            <Button
+              id="login"
+              text="Login"
+              onClick={handleOpenLoginModal}
+              style="bg-gray-950 border rounded-lg p-3 text-white text-sm font-medium hover:bg-white hover:text-black hover:border-none"
+            />
+          </li>
+        </Navbar>
+      </Section>
       <Background color="bg-gray-200" bgImg imgUrl='url("/background.jpg")'>
         <Section
           marginTop="mt-16"
@@ -46,27 +88,18 @@ export default function Home() {
         >
           <p></p>
         </Section>
-        {/* <div className="flex mt-0 w-full">
-          <Section
-            width="w-1/4"
-            height="min-h-screen"
-            xPadding="px-4"
-            yPadding="py-6"
-          >
-            hhdh hhdhdhhhdhdh hdhdhd hdhdhd hdhdhd
-          </Section>
-          <Section
-            width="w-3/4"
-            height="min-h-screen"
-            xPadding="px-4"
-            yPadding="py-6"
-          >
-            hhdh hhdhdhhhdhdh hdhdhd hdhdhd hdhdhd hhdh hhdhdhhhdhdh hdhdhd
-            hdhdhd hdhdhd hhdh hhdhdhhhdhdh hdhdhd hdhdhd hdhdhd
-          </Section>
-        </div> */}
       </Background>
       <Footer />
+      <RegisterModal
+        isOpen={isRegisterModalOpen}
+        onClose={handleCloseRegisterModal}
+        handleOpenLoginModal={handleOpenLoginModal}
+      />
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={handleCloseLoginModal}
+        handleOpenRegisterModal={handleOpenRegisterModal}
+      />
     </div>
   );
 }

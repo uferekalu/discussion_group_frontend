@@ -68,7 +68,7 @@ interface IRegisterForm {
 export const registerUser = createAsyncThunk<
   string,
   IRegisterForm,
-  { rejectValue: SerializedError }
+  { rejectValue: any }
 >("auth/register", async (credentials, thunkAPI) => {
   try {
     const token = await axios.post(`${url}/users/register`, {
@@ -90,7 +90,7 @@ export const registerUser = createAsyncThunk<
 export const loginUser = createAsyncThunk<
   string,
   ILoginForm,
-  { rejectValue: SerializedError }
+  { rejectValue: any}
 >("auth/login", async (credentials, thunkAPI) => {
   try {
     const response = await axios.post(`${url}/users/login`, {
@@ -165,8 +165,8 @@ const authSlice = createSlice({
     builder.addCase(registerUser.rejected, (state, action) => {
       return {
         ...state,
-        loginStatus: "rejected",
-        loginError: `${action.payload}`,
+        registerStatus: "rejected",
+        registerError: `${action.payload.error}`,
       };
     });
     builder.addCase(loginUser.pending, (state, action) => {
@@ -195,7 +195,7 @@ const authSlice = createSlice({
       return {
         ...state,
         loginStatus: "rejected",
-        loginError: `${action.payload}`,
+        loginError: `${action.payload.error}`,
       };
     });
   },

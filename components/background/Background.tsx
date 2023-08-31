@@ -5,7 +5,9 @@ type IBackgroundProps = {
   color: string;
   bgImg?: boolean;
   imgUrl?: string;
-  pd?: string
+  pd?: string;
+  rounded?: string;
+  shadow?: string;
 };
 
 const Background = (props: IBackgroundProps) => {
@@ -20,7 +22,9 @@ const Background = (props: IBackgroundProps) => {
   return (
     <div
       style={props.bgImg ? divStyle : undefined}
-      className={`${props.color} ${props.pd ? props.pd : undefined}`}
+      className={`${props.color} ${props.pd ? props.pd : undefined} ${
+        props.rounded ? props.rounded : undefined
+      } ${props.shadow ? props.shadow : undefined}`}
     >
       {props.children}
     </div>
