@@ -13,22 +13,49 @@ import { logoutUser } from "@/slices/authSlice";
 import NavbarMobile from "@/components/navigation/NavbarMobile";
 import { Background } from "@/components/background/Background";
 import { Footer } from "@/components/footer";
+import GroupCard from "@/components/group/GroupCard";
+import { DecodedJwt } from "@/utils/interface";
+import jwtDecode from "jwt-decode";
+import {
+  allGroups,
+  getAGroup,
+  getAllDiscussionsInAGroup,
+} from "@/slices/groupSlice";
 
 const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 export default function Forum() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const auth = useTypedSelector((state) => state.auth);
+  const groups = useTypedSelector((state) => state.groups);
+  const group = useTypedSelector((state) => state.groups.groupDetails);
+  const discussions = useTypedSelector((state) => state.groups);
   const [authToken, setAuthToken] = useState<string | null>("");
+  const [user, setUser] = useState<DecodedJwt>();
+  const [groupId, setGroupId] = useState<any>();
+  console.log("group", group)
+
+  const handleGroupId = (id: number) => {
+    setGroupId((prevState: any) => (prevState === id ? null : id))
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const decodedUser: DecodedJwt = jwtDecode(`${token}`);
     setAuthToken(token);
+    setUser(decodedUser);
     if (!token) {
       router.push("/");
     }
   }, [router]);
+
+  useEffect(() => {
+    dispatch(allGroups());
+    if (groupId) {
+      dispatch(getAGroup(groupId));
+      dispatch(getAllDiscussionsInAGroup(groupId));
+    }
+  }, [dispatch, groupId]);
 
   HeaderShrinker();
 
@@ -46,6 +73,8 @@ export default function Forum() {
       <Section width="w-full" height="h-24" yPadding="py-6">
         <Navbar
           logo={<Logo xl />}
+          user={user && true}
+          greetings={`Welcome ${user?.username}`}
           xsMenu={
             <NavbarMobile
               handleOpenRegisterModal={() => {}}
@@ -57,20 +86,18 @@ export default function Forum() {
         >
           {authToken && (
             <>
-              {/* <li className="mr-2"> */}
-                <div className="flex mr-1 mt-1">
-                  <li className="bi bi-bell-fill text-white text-xl mt-1 mr-1 list-none"></li>
-                  <span className="flex w-4 h-4 -mt-1 p-3 -ml-2 justify-center items-center text-xs m-auto bg-red-700 rounded-lg text-white">
-                    0
-                  </span>
-                </div>
-              {/* </li> */}
+              <div className="flex mr-1 mt-1">
+                <li className="bi bi-bell-fill text-white text-xl mt-1 mr-1 list-none"></li>
+                <span className="flex w-4 h-4 -mt-1 p-3 -ml-2 justify-center items-center text-xs m-auto bg-red-700 rounded-lg text-white">
+                  0
+                </span>
+              </div>
               <li>
                 <Button
                   id="invite"
                   text="Send an Invite"
                   onClick={() => {}}
-                  style="bg-red-400 border rounded-lg p-3 text-white text-sm font-medium hover:bg-white hover:text-black hover:border-none"
+                  style="bg-red-400 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
                 />
               </li>
               <li>
@@ -78,7 +105,7 @@ export default function Forum() {
                   id="join"
                   text="Join A Group"
                   onClick={() => {}}
-                  style="bg-blue-400 border rounded-lg p-3 text-white text-sm font-medium hover:bg-white hover:text-black hover:border-none"
+                  style="bg-blue-400 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
                 />
               </li>
               <li>
@@ -86,7 +113,7 @@ export default function Forum() {
                   id="logout"
                   text="Logout"
                   onClick={handleLogout}
-                  style="bg-gray-950 border rounded-lg p-3 text-white text-sm font-medium hover:bg-white hover:text-black hover:border-none"
+                  style="bg-gray-950 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
                 />
               </li>
             </>
@@ -100,8 +127,29 @@ export default function Forum() {
             height="min-h-screen"
             xPadding="px-4"
             yPadding="py-6"
+            title="List of Groups"
+            description="You can look through the below groups and join any group of your interest"
+            customBg="bg-white"
           >
-            hhdh hhdhdhhhdhdh hdhdhd hdhdhd hdhdhd
+            {groups.allGroups?.map((data) => (
+              <GroupCard
+                key={data.id}
+                id={data.id}
+                creator={data.username}
+                groupName={data.name}
+                groupError={groups.groupError}
+                action1="Join"
+                action2={"Start a Discussion"}
+                onClick={() => {}}
+                discussions={discussions.discussions}
+                groupMembers={group}
+                handleGroupId={() => handleGroupId(data.id)}
+                groupId={groupId}
+                description={data.description}
+                discussionsError={discussions.discussionError}
+                
+              />
+            ))}
           </Section>
           <Section
             width="w-3/4"
@@ -119,9 +167,28 @@ export default function Forum() {
             height="min-h-screen"
             xPadding="px-4"
             yPadding="py-6"
+            title="List of Groups"
+            description="You can look through the below groups and join any group of your interest"
+            customBg="bg-white"
           >
-            hhdh hhdhdhhhdhdh hdhdhd hdhdhd hdhdhd hhdh hhdhdhhhdhdh hdhdhd
-            hdhdhd hdhdhd hhdh hhdhdhhhdhdh hdhdhd hdhdhd hdhdhd
+            {groups.allGroups?.map((data) => (
+              <GroupCard
+                key={data.id}
+                id={data.id}
+                creator={data.username}
+                groupName={data.name}
+                groupError={groups.groupError}
+                action1="Join"
+                action2={"Start a Discussion"}
+                onClick={() => {}}
+                discussions={discussions.discussions}
+                groupMembers={group}
+                handleGroupId={() => handleGroupId(data.id)}
+                groupId={groupId}
+                description={data.description}
+                discussionsError={discussions.discussionError}
+              />
+            ))}
           </Section>
         </div>
       </Background>

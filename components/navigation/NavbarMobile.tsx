@@ -51,12 +51,14 @@ const NavbarMobile = (props: INavbarMobile) => {
   return (
     <div ref={menuRef}>
       <div className="flex space-x-2">
-        <div className="flex mr-1 mt-1">
-          <li className="bi bi-bell-fill text-white text-xl mt-1 mr-1 list-none"></li>
-          <span className="flex w-4 h-4 -mt-1 p-3 -ml-2 justify-center items-center text-xs m-auto bg-red-700 rounded-lg text-white">
-            0
-          </span>
-        </div>
+        {authToken && (
+          <div className="flex mr-1 mt-1">
+            <li className="bi bi-bell-fill text-white text-xl mt-1 mr-1 list-none"></li>
+            <span className="flex w-4 h-4 -mt-1 p-3 -ml-2 justify-center items-center text-xs m-auto bg-red-700 rounded-lg text-white">
+              0
+            </span>
+          </div>
+        )}
         <i
           onClick={handleToggleMenu}
           className={

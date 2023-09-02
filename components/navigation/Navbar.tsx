@@ -5,6 +5,8 @@ type INavbarProps = {
   logo: ReactNode;
   children: ReactNode;
   xsMenu: ReactNode;
+  greetings?: string;
+  user?: boolean;
 };
 
 const Navbar = (props: INavbarProps) => (
@@ -17,14 +19,23 @@ const Navbar = (props: INavbarProps) => (
       width: "100%",
       paddingLeft: "12px",
       paddingRight: "12px",
-      transition: 'height 0.3s ease',
-      backdropFilter: 'saturate(180% blur(20px)',
+      transition: "height 0.3s ease",
+      backdropFilter: "saturate(180% blur(20px)",
     }}
     id="navbar"
     className="flex w-full justify-between h-24 items-center fixed z-20 right-0 left-0 top-0"
   >
     <div>
       <Link href={"/"}>{props.logo}</Link>
+    </div>
+    <div>
+      {props.user
+        ? props.greetings && (
+            <span className="text-indigo-500 bg-black rounded-lg sm:p-2 p-1 sm:text-sm text-xs font-bold ">
+              {props.greetings}
+            </span>
+          )
+        : undefined}
     </div>
     <nav className="sm:hidden block">{props.xsMenu}</nav>
     <nav className="sm:block hidden">

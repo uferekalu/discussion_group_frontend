@@ -6,19 +6,7 @@ import {
 import jwtDecode from "jwt-decode";
 import axios from "axios";
 import { url } from "./api";
-
-interface DecodedJwt {
-  id: number;
-  name: string;
-  email: string;
-  username: string;
-  profile_picture?: string;
-  country?: string;
-  sex?: string;
-  hobbies?: string;
-  iat?: number;
-  exp?: number;
-}
+import { DecodedJwt } from "@/utils/interface";
 
 interface AuthState {
   token: string | null;
@@ -82,7 +70,7 @@ export const registerUser = createAsyncThunk<
     });
     console.log(token.data.user);
     return token.data.user;
-  } catch (error) {
+  } catch (error: any) {
     return thunkAPI.rejectWithValue(error.response.data);
   }
 });
@@ -100,7 +88,7 @@ export const loginUser = createAsyncThunk<
     const { token } = response.data;
     localStorage.setItem("token", token);
     return token;
-  } catch (error) {
+  } catch (error: any) {
     return thunkAPI.rejectWithValue(error.response.data);
   }
 });

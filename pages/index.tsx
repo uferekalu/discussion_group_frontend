@@ -63,7 +63,7 @@ export default function Home() {
               id="signup"
               text="Sign Up"
               onClick={handleOpenRegisterModal}
-              style="bg-pink-500 border rounded-lg p-3 text-white text-sm font-medium hover:bg-yellow-600 hover:text-black hover:border-none"
+              style="bg-pink-500 border rounded-lg p-1 text-white text-sm font-medium hover:bg-yellow-600 hover:text-black hover:border-none"
             />
           </li>
           <li>
@@ -71,7 +71,7 @@ export default function Home() {
               id="login"
               text="Login"
               onClick={handleOpenLoginModal}
-              style="bg-gray-950 border rounded-lg p-3 text-white text-sm font-medium hover:bg-white hover:text-black hover:border-none"
+              style="bg-gray-950 border rounded-lg p-1 text-white text-sm font-medium hover:bg-white hover:text-black hover:border-none"
             />
           </li>
         </Navbar>
