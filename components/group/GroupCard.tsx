@@ -1,25 +1,29 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, ReactNode } from "react";
 import Image from "next/image";
 import { Button } from "../button/Button";
 import { Select } from "../select/Select";
 import { Overlay } from "../overlay/Overlay";
-import { DecodedJwt, DiscussionObject, GroupDetails } from "@/utils/interface";
+import {
+  DecodedJwt,
+  DiscussionObject,
+  GroupDetails,
+  GroupMemberObject,
+  UserObject,
+} from "@/utils/interface";
 
 interface IGroupCard {
   id: number;
-  groupId: number | null;
+  groupId: number;
   creator: string;
   groupName: string;
-  action1: string;
-  action2: string;
   description: string;
-  onClick: () => void;
-  discussions?: DiscussionObject[];
-  groupMembers: GroupDetails | undefined;
-  handleGroupId: () => void;
-  discussionsError?: string | undefined;
+  handleIdFromGroup: (num: number) => void;
+  handleGroupId: (num: number) => void;
   groupError?: string | undefined;
-  //   authToken: DecodedJwt | undefined
+  group: GroupDetails;
+  user: DecodedJwt | undefined;
+  isMember: boolean;
+  discussions: DiscussionObject[];
 }
 
 const GroupCard: React.FC<IGroupCard> = ({
@@ -27,15 +31,14 @@ const GroupCard: React.FC<IGroupCard> = ({
   groupId,
   creator,
   groupName,
-  action1,
-  action2,
   description,
-  onClick,
-  discussions,
-  groupMembers,
+  handleIdFromGroup,
   handleGroupId,
-  discussionsError,
   groupError,
+  group,
+  user,
+  isMember,
+  discussions,
   //   authToken
 }) => {
   const [groupOverlay, setGroupOverlay] = useState<boolean>(false);
@@ -67,7 +70,7 @@ const GroupCard: React.FC<IGroupCard> = ({
         <>
           <div className="w-full mb-3 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
             <div
-              onClick={() => handleGroupId()}
+              onClick={() => handleGroupId(id)}
               className="flex justify-between items-center p-2 cursor-pointer w-full"
             >
               <Image
@@ -90,7 +93,8 @@ const GroupCard: React.FC<IGroupCard> = ({
             </div>
           </div>
           <div
-            className={`{w-full mb-3 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 ${
+            onClick={() => handleIdFromGroup(id)}
+            className={`{w-full mb-3 bg-white border cursor-pointer p-2 border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 ${
               groupId === id ? "block" : "hidden"
             }`}
           >
@@ -147,105 +151,49 @@ const GroupCard: React.FC<IGroupCard> = ({
                 </span>{" "}
                 {groupName}
               </span>
-              <p className="text-black text-xs mt-2 px-6">{`${description.slice(
+              <p className="text-black text-center bg-gray-200 p-1 border rounded-lg text-xs mt-2 px-6">{`${description.slice(
                 0,
                 100
               )}...`}</p>
-              <div className="flex md:flex-col lg:hidden space-x-1">
-                {discussionsError === "User is not a member" && (
-                  <Button
-                    id="join"
-                    text="Join Group"
-                    onClick={() => {}}
-                    style="bg-blue-400 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
-                  />
-                )}
-                {discussionsError != "User is not a member" && (
+
+              <div className="flex flex-col space-y-2">
+                {isMember ? (
                   <>
-                    {discussions && discussions?.length > 0 && (
-                      <Select text="See Discussion">
-                        {discussions?.map((discussion: DiscussionObject) => (
-                          <option key={discussion.id} value={discussion.title}>
-                            {discussion.title}
+                    <Select text="Group Members">
+                      {group.Group_members.map(
+                        (mem: GroupMemberObject, idx: number) => (
+                          <option key={idx} value={mem.User.username}>
+                            {mem.User.username}
                           </option>
-                        ))}
+                        )
+                      )}
+                    </Select>
+                    {discussions && discussions.length > 0 && (
+                      <Select text="Discussions">
+                        {discussions.map(
+                          (discussion: DiscussionObject, idx: number) => (
+                            <option key={idx} value={discussion.title}>
+                              {discussion.title}
+                            </option>
+                          )
+                        )}
                       </Select>
                     )}
                     <Button
-                      id="join"
-                      text="Start a Discussion"
+                      id="startDiscussion"
+                      text="Start Discussion"
                       onClick={() => {}}
-                      style="bg-blue-400 border rounded-lg px-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
+                      style="bg-gray-950 border mt-2 rounded-lg p-1 text-white text-sm font-medium"
                     />
-                    <Select text="See Members">
-                      {groupMembers?.Group_members.map((mem, idx) => (
-                        <option key={idx} value={mem.User.username}>
-                          {mem.User.username}
-                        </option>
-                      ))}
-                    </Select>
                   </>
-                )}
-              </div>
-              <div className="lg:flex hidden space-x-1">
-                {discussionsError === "User is not a member" && (
+                ) : (
                   <Button
-                    id="join"
+                    id="joinGroup"
                     text="Join Group"
                     onClick={() => {}}
-                    style="bg-blue-400 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
+                    style="bg-gray-950 border mt-2 rounded-lg p-1 text-white text-sm font-medium"
                   />
                 )}
-                {discussionsError !== "User is not a member" && (
-                  <>
-                    {discussions && discussions?.length > 0 && (
-                      <Select text="See Discussion">
-                        {discussions?.map((discussion: DiscussionObject) => (
-                          <option key={discussion.id} value={discussion.title}>
-                            {discussion.title}
-                          </option>
-                        ))}
-                      </Select>
-                    )}
-                    <Button
-                      id="join"
-                      text="Start a Discussion"
-                      onClick={() => {}}
-                      style="bg-blue-400 border rounded-lg px-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
-                    />
-                    <Select text="See Members">
-                      {groupMembers?.Group_members.map((mem, idx) => (
-                        <option key={idx} value={mem.User.username}>
-                          {mem.User.username}
-                        </option>
-                      ))}
-                    </Select>
-                  </>
-                )}
-              </div>
-              <div className="flex sm:flex-col lg:hidden mt-2 space-x-1 md:mt-6">
-                <Button
-                  text={action1}
-                  onClick={onClick}
-                  style="inline-flex justify-center items-center px-2 py-1 sm:px-4 sm:py-2 sm:text-sm text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                />
-                <Button
-                  text={action2}
-                  onClick={onClick}
-                  style="inline-flex items-center px-2 py-1 sm:px-4 sm:py-2 sm:text-sm text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-700 dark:focus:ring-gray-700"
-                />
-              </div>
-              <div className="lg:flex hidden mt-2 space-x-1 md:mt-6">
-                <Button
-                  text={action1}
-                  onClick={onClick}
-                  style="inline-flex items-center px-2 py-1 sm:px-4 sm:py-2 sm:text-sm text-xs font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                />
-                <Button
-                  text={action2}
-                  onClick={onClick}
-                  style="inline-flex items-center px-2 py-1 sm:px-4 sm:py-2 sm:text-sm text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-700 dark:focus:ring-gray-700"
-                />
               </div>
             </div>
           </div>
