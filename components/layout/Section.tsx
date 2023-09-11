@@ -30,12 +30,12 @@ const Section = (props: ISectionProps) => (
         } rounded-xl shadow-md p-2`}
       >
         {props.title && (
-          <h2 className="text:sm font-bold text-black">
+          <h2 className={`text:sm font-bold text-black`}>
             {props.title}
           </h2>
         )}
         {props.description && (
-          <div className="mt-1 sm:text-sm text:xs md:pd-20 sm:font-semibold font-normal text-black">
+          <div className={`mt-1 sm:text-sm text:xs md:pd-20 text-black`}>
             {props.description}
           </div>
         )}

@@ -6,7 +6,22 @@ import {
 import jwtDecode from "jwt-decode";
 import axios from "axios";
 import { url } from "./api";
-import { AuthState, DecodedJwt } from "@/utils/interface";
+import { DecodedJwt } from "@/utils/interface";
+
+interface AuthState {
+  token: string | null;
+  name: string;
+  email: string;
+  username: string
+  id: number | null;
+  registerStatus: string;
+  registerError: string;
+  loginStatus: string;
+  loginError: string;
+  userLoaded: boolean;
+  getUserStatus: string;
+  getUserError: string;
+}
 
 const initialState: AuthState = {
   token: null,
@@ -83,28 +98,13 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     loadUser(state, action) {
-      const token = typeof window !== "undefined" && localStorage.getItem("token")
+      const token = state.token;
       if (token) {
-        const decodedToken:DecodedJwt = jwtDecode(token);
-        // Checl if the token has expired
-        const currentTime = Date.now() / 1000 // convert to seconds
-        if (decodedToken.exp && decodedToken.exp < currentTime) {
-          // Token has expired, log the user out
-          typeof window !== "undefined" && localStorage.removeItem("token")
-          return {
-            ...state,
-            token: null,
-            name: "",
-            email: "",
-            uername: "",
-            id: null,
-            userLoaded: true
-          }
-        }
+        const user:DecodedJwt = jwtDecode(token);
         return {
           ...state,
           token,
-          user: decodedToken,
+          user,
           userLoaded: true,
         };
       } else {
@@ -188,3 +188,47 @@ const authSlice = createSlice({
 
 export const { loadUser, logoutUser } = authSlice.actions;
 export default authSlice.reducer;
+
+
+// AuthProvider.js (Auth context provider)
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../redux/authSlice';
+
+const AuthProvider = ({ children }) => {
+  const dispatch = useDispatch();
+  const { token, expiresAt } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    // Calculate remaining time until token expiration
+    const expirationTime = new Date(expiresAt).getTime() - Date.now();
+    
+    const timer = setTimeout(() => {
+      // Dispatch logout action when token expires
+      dispatch(logout());
+    }, expirationTime);
+
+    return () => {
+      // Clear the timer on logout or component unmount
+      clearTimeout(timer);
+    };
+  }, [dispatch, expiresAt]);
+
+  return children;
+};
+
+export default AuthProvider;
+
+import { Provider } from 'react-redux';
+import store from '../redux/store';
+import AuthProvider from '../components/AuthProvider';
+
+const MyApp = ({ Component, pageProps }) => (
+  <Provider store={store}>
+    <AuthProvider>
+      <Component {...pageProps} />
+    </AuthProvider>
+  </Provider>
+);
+
+export default MyApp;

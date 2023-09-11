@@ -1,10 +1,8 @@
-import { NextPage } from "next";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, ReactNode } from "react";
 import { Button } from "@/components/button/Button";
 import { Meta } from "@/components/layout/Meta";
 import { Section } from "@/components/layout/Section";
 import { Logo } from "@/components/logo/Logo";
-import { Navbar } from "@/components/navigation/Navbar";
 import { AppConfig } from "@/utils/AppConfig";
 import { HeaderShrinker } from "@/utils/HeaderShrinker";
 import { useRouter } from "next/router";
@@ -13,7 +11,7 @@ import NavbarMobile from "@/components/navigation/NavbarMobile";
 import { Background } from "@/components/background/Background";
 import { Footer } from "@/components/footer";
 import GroupCard from "@/components/group/GroupCard";
-import { DecodedJwt, Item } from "@/utils/interface";
+import { DecodedJwt } from "@/utils/interface";
 import jwtDecode from "jwt-decode";
 import {
   allGroups,
@@ -21,18 +19,29 @@ import {
   getAllDiscussionsInAGroup,
 } from "@/slices/groupSlice";
 import Pagination from "@/components/paginatedData/Pagination";
+import HorizontalSlider from "@/components/slider/HorizontalSlider";
+import { Navbar } from "@/components/navigation/Navbar";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import GroupDetailComp from "@/components/groupDetailComp/GroupDetailComp";
 import PulseAnimation from "@/components/animations/PulseAnimations";
+
+interface Item {
+  id: number;
+  name: string;
+  username: string;
+  description: string;
+}
 interface RenderItemProps {
   startIndex: number;
   endIndex: number;
 }
 
-const Forum: NextPage = () => {
+const GroupDetails = () => {
   const router = useRouter();
+  const { groupDetailId }: any = router.query;
   const dispatch = useAppDispatch();
   const groups = useAppSelector((state) => state.groups);
-  const group = useAppSelector((state) => state.groups.groupDetails);
+  const group = useAppSelector((state) => state.groups);
   const discussions = useAppSelector((state) => state.groups);
   const [authToken, setAuthToken] = useState<string | null>("");
   const [user, setUser] = useState<DecodedJwt>();
@@ -67,18 +76,22 @@ const Forum: NextPage = () => {
   }, [router]);
 
   useEffect(() => {
-    dispatch(allGroups())
+    dispatch(allGroups());
     if (idFromGroup) {
       dispatch(getAGroup(idFromGroup));
     }
-    if (groupId) {
-      dispatch(getAGroup(groupId));
-      dispatch(getAllDiscussionsInAGroup(groupId));
+    if (groupDetailId) {
+      dispatch(getAGroup(groupDetailId));
+      dispatch(getAllDiscussionsInAGroup(groupDetailId));
     }
-  }, [dispatch, idFromGroup, groupId]);
+    // if (groupId) {
+    //   dispatch(getAGroup(groupId));
+    //   dispatch(getAllDiscussionsInAGroup(groupId));
+    // }
+  }, [dispatch, idFromGroup, groupDetailId]);
 
   useEffect(() => {
-    const groupMembers = group.Group_members;
+    const groupMembers = group.groupDetails.Group_members;
     const index = groupMembers.findIndex(
       (member) => member.User.username === user?.username
     );
@@ -87,7 +100,7 @@ const Forum: NextPage = () => {
     } else {
       setIsMember(false);
     }
-  }, [group.Group_members, user?.username]);
+  }, [group.groupDetails.Group_members, user?.username]);
 
   HeaderShrinker();
 
@@ -109,11 +122,12 @@ const Forum: NextPage = () => {
           creator={item.username}
           groupName={item.name}
           groupError={groups.groupError}
+          groupStatus={groups.groupStatus}
           handleIdFromGroup={handleIdFromGroup}
           handleGroupId={handleGroupId}
           groupId={groupId}
           description={item.description}
-          group={group}
+          group={group.groupDetails}
           user={user}
           isMember={isMember}
           discussions={discussions.discussions}
@@ -207,10 +221,45 @@ const Forum: NextPage = () => {
             xPadding="px-4"
             yPadding="py-6"
           >
-            <PulseAnimation num={12} display="grid sm:grid-cols-3 gap-4"/>
+            {group && group.singleGroupStatus === "pending" ? (
+              <PulseAnimation num={12} display="grid sm:grid-cols-3 gap-4" />
+            ) : (
+              <>
+                <HorizontalSlider
+                  items={discussions.discussions}
+                  slideWidth={200}
+                  slideHeight={200}
+                  backgroundImage={'url("/images/flowerybg.jpg")'}
+                  backgroundSize="cover"
+                  backgroundRepeat="no-repeat"
+                  backgroundPosition="center"
+                  slideDuration={500}
+                  slideInterval={2000}
+                />
+                <GroupDetailComp group={group.groupDetails} />
+              </>
+            )}
           </Section>
         </div>
-        <div className="flex flex-col sm:hidden space-y-2 w-full">
+        <div className="flex flex-col sm:hidden space-y-2 w-full p-3">
+          {group.singleGroupStatus === "pending" ? (
+            <PulseAnimation num={2} display="flex space-x-3" />
+          ) : (
+            <>
+              <HorizontalSlider
+                items={discussions.discussions}
+                slideWidth={200}
+                slideHeight={200}
+                backgroundImage={'url("/images/flowerybg.jpg")'}
+                backgroundSize="cover"
+                backgroundRepeat="no-repeat"
+                backgroundPosition="center"
+                slideDuration={500}
+                slideInterval={2000}
+              />
+              <GroupDetailComp group={group.groupDetails} />
+            </>
+          )}
           <Section
             width="w-full"
             height="min-h-screen"
@@ -221,7 +270,7 @@ const Forum: NextPage = () => {
             customBg="bg-white"
           >
             {groups.groupStatus === "pending" ? (
-              <PulseAnimation num={3} display="grid grid-cols-1 gap-4"/>
+              <PulseAnimation num={3} display="grid grid-cols-1 gap-4" />
             ) : (
               <Pagination
                 currentPage={currentPage}
@@ -238,6 +287,6 @@ const Forum: NextPage = () => {
       <Footer />
     </div>
   );
-}
+};
 
-export default Forum
+export default GroupDetails;

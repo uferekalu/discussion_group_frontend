@@ -107,7 +107,7 @@ const groupSlice = createSlice({
       return {
         ...state,
         groupStatus: "rejected",
-        groupError: action.payload.error,
+        groupError: action.payload,
       };
     });
     builder.addCase(getAGroup.pending, (state, action) => {
@@ -130,8 +130,8 @@ const groupSlice = createSlice({
     builder.addCase(getAGroup.rejected, (state, action: any) => {
       return {
         ...state,
-        groupStatus: "rejected",
-        groupError: action.payload.error,
+        singleGroupStatus: "rejected",
+        singleGroupError: action.payload.error,
       };
     });
     builder.addCase(getAllDiscussionsInAGroup.pending, (state, action) => {

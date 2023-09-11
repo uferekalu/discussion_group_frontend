@@ -71,7 +71,7 @@ const NavbarMobile = (props: INavbarMobile) => {
       {toggleMenu && (
         <div
           id="togglebar"
-          className="block fixed top-20 right-0 z-10 mt-1 rounded-lg py-3 w-1/2 h-3/4 ease-in duration-300"
+          className="flex fixed top-20 right-0 z-10 mt-1 rounded-lg py-3 w-1/2 h-3/4 ease-in duration-300"
         >
           <Background
             color="bg-gray-100"

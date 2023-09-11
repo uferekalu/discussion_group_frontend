@@ -27,7 +27,7 @@ const Logo = (props: ILogoProps) => {
         height={size}
         alt="group"
       />
-      <div>{AppConfig.site_name}</div>
+      <div className="sm:block hidden">{AppConfig.site_name}</div>
     </span>
   );
 };

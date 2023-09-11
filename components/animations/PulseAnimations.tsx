@@ -2,11 +2,12 @@ import React, { ReactNode } from "react";
 
 interface IPulseAnimation {
     num: number
+    display: string
 }
 
-const PulseAnimation: React.FC<IPulseAnimation> = ({ num }) => {
+const PulseAnimation: React.FC<IPulseAnimation> = ({ num, display }) => {
   return (
-    <div className="space-y-3">
+    <div className={`${display ? display : undefined}`}>
       {new Array(num).fill(null).map((pulse, idx) => (
         <div
           className="border border-blue-300 bg-white shadow justify-center items-center rounded-md p-4 max-w-sm w-full mx-auto"

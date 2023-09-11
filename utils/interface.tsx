@@ -1,3 +1,18 @@
+export interface AuthState {
+  token: string | null;
+  name: string;
+  email: string;
+  username: string
+  id: number | null;
+  registerStatus: string;
+  registerError: string;
+  loginStatus: string;
+  loginError: string;
+  userLoaded: boolean;
+  getUserStatus: string;
+  getUserError: string;
+}
+
 export interface DecodedJwt {
   id: number;
   name: string;
@@ -31,6 +46,15 @@ export interface UserObject {
   hobbies: string;
 }
 
+export interface User {
+  userDetails: UserObject
+  userStatus: string
+  userError: string
+  userUpdateStatus: string
+  userUpdateError: string
+  userUpdateMessage: string
+}
+
 export interface GroupMemberObject {
   user_id: number;
   User: UserObject;
@@ -58,4 +82,27 @@ export interface DiscussionObject {
   content: string;
   author_id: number | null;
   Comments: DiscussionCommentObject[];
+}
+
+export interface Item {
+  id: number;
+  name: string;
+  username: string;
+  description: string;
+}
+
+export interface UploadImage {
+  uploadPath: string
+  uploadStatus: string
+  uploadError: string
+}
+
+export interface UserUpdateData {
+  name: string;
+  email: string;
+  username: string;
+  country: string;
+  sex: string;
+  hobbies: string;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }

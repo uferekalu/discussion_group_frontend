@@ -2,12 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button } from "../button/Button";
 import { Input } from "../input/Input";
 import { useRouter } from "next/router";
-import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
-import { AppDispatch, RootState } from "@/store";
 import { loginUser } from "@/slices/authSlice";
-
-const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
-
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,8 +21,8 @@ const LoginModal: React.FC<LoginModalProps> = ({
   });
 
   const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const auth = useTypedSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const auth = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     if (auth.loginStatus === "success") {

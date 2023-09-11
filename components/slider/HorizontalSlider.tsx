@@ -1,13 +1,8 @@
+import { DiscussionObject } from "@/utils/interface";
 import React, { useRef, useState, useEffect } from "react";
 
-interface Item {
-  id: number;
-  title: string;
-  description: string;
-}
-
 interface HorizontalSliderProps {
-  items: Item[];
+  items: DiscussionObject[];
   slideWidth: number;
   slideHeight: number;
   backgroundImage: string;
@@ -110,49 +105,51 @@ const HorizontalSlider: React.FC<HorizontalSliderProps> = ({
   }, [scrollPosition]);
 
   return (
-    <div className="flex items-center">
-      <button
-        className="mr-2 p-1 bg-blue-300 rounded-md text-xs text-black font-bold"
-        onClick={handlePrev}
-      >
-        Previous
-      </button>
-      <div
-        className="flex overflow-x-auto space-x-4 rounded-lg border shadow-lg"
-        ref={sliderRef}
-        style={{ scrollBehavior: "smooth" }}
-      >
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="flex-shrink-0 w-[200px] h-[200px] bg-blue-200 flex items-center justify-center px-2 cursor-pointer"
-            style={{
-              minWidth: slideWidth,
-              minHeight: slideHeight,
-              backgroundImage: backgroundImage,
-              backgroundSize: backgroundSize,
-              backgroundRepeat: backgroundRepeat,
-              backgroundPosition: backgroundPosition,
-            }}
+    <>
+      <div className="flex items-center">
+        {/* <button
+            className="mr-2 p-1 bg-black rounded-md text-xs text-white font-bold"
+            onClick={handlePrev}
           >
-            <div className="flex flex-col bg-gray-400 p-2 rounded-lg shadow-lg items-center justify-center space-y-1">
-              <span className="text-black text-xs font-bold text-center">
-                {item.title}
-              </span>
-              <span className="text-black text-xs font-medium text-center">
-                {item.description}
-              </span>
+            Previous
+          </button> */}
+        <div
+          className="flex overflow-x-auto space-x-4 rounded-lg border shadow-lg"
+          ref={sliderRef}
+          style={{ scrollBehavior: "smooth" }}
+        >
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="flex-shrink-0 w-[200px] h-[200px] bg-blue-200 flex items-center justify-center px-2 cursor-pointer"
+              style={{
+                minWidth: slideWidth,
+                minHeight: slideHeight,
+                backgroundImage: backgroundImage,
+                backgroundSize: backgroundSize,
+                backgroundRepeat: backgroundRepeat,
+                backgroundPosition: backgroundPosition,
+              }}
+            >
+              <div className="flex flex-col bg-gray-400 p-2 rounded-lg shadow-lg items-center justify-center space-y-1">
+                <span className="text-black text-xs font-bold text-center">
+                  {item.title}
+                </span>
+                <span className="text-black text-xs font-medium text-center">
+                  {item.content}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        {/* <button
+            className="ml-2 p-1 bg-black rounded-md text-xs text-white font-bold"
+            onClick={handleNext}
+          >
+            Next
+          </button> */}
       </div>
-      <button
-        className="ml-2 p-1 bg-blue-300 rounded-md text-xs text-black font-bold"
-        onClick={handleNext}
-      >
-        Next
-      </button>
-    </div>
+    </>
   );
 };
 

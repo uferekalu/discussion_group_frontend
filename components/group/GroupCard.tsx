@@ -10,6 +10,8 @@ import {
   GroupMemberObject,
   UserObject,
 } from "@/utils/interface";
+import { useRouter } from "next/router";
+import PulseAnimation from "../animations/PulseAnimations";
 
 interface IGroupCard {
   id: number;
@@ -20,6 +22,7 @@ interface IGroupCard {
   handleIdFromGroup: (num: number) => void;
   handleGroupId: (num: number) => void;
   groupError?: string | undefined;
+  groupStatus?: string;
   group: GroupDetails;
   user: DecodedJwt | undefined;
   isMember: boolean;
@@ -35,6 +38,7 @@ const GroupCard: React.FC<IGroupCard> = ({
   handleIdFromGroup,
   handleGroupId,
   groupError,
+  groupStatus,
   group,
   user,
   isMember,
@@ -43,6 +47,7 @@ const GroupCard: React.FC<IGroupCard> = ({
 }) => {
   const [groupOverlay, setGroupOverlay] = useState<boolean>(false);
   const overlayRef = useRef<HTMLImageElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -93,10 +98,12 @@ const GroupCard: React.FC<IGroupCard> = ({
             </div>
           </div>
           <div
-            onClick={() => handleIdFromGroup(id)}
-            className={`{w-full mb-3 bg-white border cursor-pointer p-2 border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 ${
+            onClick={
+              isMember ? () => router.push(`/forum/group/${id}`) : undefined
+            }
+            className={`{w-full mb-3 bg-white border p-2 border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 ${
               groupId === id ? "block" : "hidden"
-            }`}
+            } ${isMember && "cursor-pointer"} `}
           >
             <div className="flex justify-end mt-1 mr-1">
               <Image
@@ -109,30 +116,30 @@ const GroupCard: React.FC<IGroupCard> = ({
                 alt="up"
               />
             </div>
-            <div className="flex justify-end px-4 pt-4">
-              {groupOverlay && (
-                <Overlay groupOverlay={groupOverlay}>
-                  <ul className="py-2" aria-labelledby="dropdownButton">
-                    <li>
-                      <Button
-                        onClick={() => {
-                          console.log("clicked");
-                        }}
-                        text="Edit"
-                        style="block w-full px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                      />
-                    </li>
-                    <li>
-                      <Button
-                        onClick={() => {}}
-                        text="Delete"
-                        style="block w-full px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                      />
-                    </li>
-                  </ul>
-                </Overlay>
-              )}
-            </div>
+              <div className={`flex justify-end px-4 pt-4`}>
+                {groupOverlay && (
+                  <Overlay groupOverlay={groupOverlay}>
+                    <ul className="py-2" aria-labelledby="dropdownButton">
+                      <li>
+                        <Button
+                          onClick={() => {
+                            console.log("clicked");
+                          }}
+                          text="Edit"
+                          style="block w-full px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                        />
+                      </li>
+                      <li>
+                        <Button
+                          onClick={() => {}}
+                          text="Delete"
+                          style="block w-full px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                        />
+                      </li>
+                    </ul>
+                  </Overlay>
+                )}
+              </div>
             <div className="flex flex-col items-center pb-2">
               <Image
                 className="mb-3 rounded-full shadow-lg"

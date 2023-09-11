@@ -2,11 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button } from "../button/Button";
 import { Input } from "../input/Input";
 import { useRouter } from "next/router";
-import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
-import { AppDispatch, RootState } from "@/store";
 import { registerUser } from "@/slices/authSlice";
-
-const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -25,8 +22,8 @@ const RegisterModal = (props: RegisterModalProps) => {
     hobbies: "",
   });
   const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const auth = useTypedSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const auth = useAppSelector((state) => state.auth);
   const { handleOpenLoginModal, onClose } = props;
 
   useEffect(() => {
