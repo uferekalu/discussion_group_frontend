@@ -6,7 +6,8 @@ import { uploadImage } from "@/slices/uploadSlice";
 import { Button } from "../button/Button";
 import UserUpdateComp from "./UserUpdateComp";
 import { getUserDetails, updateUser } from "@/slices/userSlice";
-import AlertDismissible from "../alert/Alert";
+import ReusableModal from "../modal/ReusableModal";
+import UpdateNotification from "../group/UpdateNotification";
 
 interface IUserDetail {
   userDetail: UserObject;
@@ -33,18 +34,19 @@ const UserDetailComp: React.FC<IUserDetail> = ({
     sex: userDetail.sex,
     hobbies: userDetail.hobbies,
   });
-  const [open, setOpen] = useState<boolean>(false);
+  const [update, setUpdate] = useState<boolean>(false);
 
   const upload = useAppSelector((state) => state.upload);
   const dispatch = useAppDispatch();
   const baseUrl = "http://localhost:5000";
 
+  const openUpdate = () => setUpdate(true);
+  const closeUpdate = () => setUpdate(false);
+
   const handleUpdateProfile = () => {
     setUpdateProfile(true);
   };
-  const handleAlertOpen = () => {
-    setOpen(true);
-  };
+
   const handleCancelProfile = () => {
     setUpdateProfile(false);
   };
@@ -83,10 +85,7 @@ const UserDetailComp: React.FC<IUserDetail> = ({
     setTimeout(() => {
       return dispatch(getUserDetails(userDetailId));
     }, 2000);
-    setOpen(true)
-    setTimeout(() => {
-      setOpen(false)
-    }, 4000);
+    openUpdate();
   };
 
   const handleImageClick = () => {
@@ -134,11 +133,6 @@ const UserDetailComp: React.FC<IUserDetail> = ({
       }}
       className="sm:w-1/2 w-full justify-center items-center m-auto rounded-lg shadow-lg"
     >
-      <AlertDismissible
-        onClose={() => setOpen(false)}
-        open={open}
-        text={userUpdateMessage}
-      />
       <div className="shadow-xl rounded-lg py-3">
         <div className="photo-wrapper p-2">
           {userDetail.email === user?.email ? (
@@ -260,6 +254,16 @@ const UserDetailComp: React.FC<IUserDetail> = ({
           )}
         </div>
       </div>
+      <ReusableModal
+        open={update}
+        onClose={closeUpdate}
+        deSelectGroup={() => {}}
+      >
+        <UpdateNotification
+          closeUpdate={closeUpdate}
+          text={userUpdateMessage}
+        />
+      </ReusableModal>
     </div>
   );
 };

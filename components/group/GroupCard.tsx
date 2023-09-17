@@ -5,13 +5,9 @@ import { Select } from "../select/Select";
 import { Overlay } from "../overlay/Overlay";
 import {
   DecodedJwt,
-  DiscussionObject,
-  GroupDetails,
-  GroupMemberObject,
-  UserObject,
+  discussionObj,
 } from "@/utils/interface";
 import { useRouter } from "next/router";
-import PulseAnimation from "../animations/PulseAnimations";
 
 interface IGroupCard {
   id: number;
@@ -23,10 +19,12 @@ interface IGroupCard {
   handleGroupId: (num: number) => void;
   groupError?: string | undefined;
   groupStatus?: string;
-  group: GroupDetails;
   user: DecodedJwt | undefined;
   isMember: boolean;
-  discussions: DiscussionObject[];
+  discussions: discussionObj[];
+  openModal: () => void;
+  selectGroup: (id: number, name: string) => void;
+  members: string[]
 }
 
 const GroupCard: React.FC<IGroupCard> = ({
@@ -35,14 +33,13 @@ const GroupCard: React.FC<IGroupCard> = ({
   creator,
   groupName,
   description,
-  handleIdFromGroup,
   handleGroupId,
   groupError,
-  groupStatus,
-  group,
-  user,
   isMember,
   discussions,
+  openModal,
+  selectGroup,
+  members
   //   authToken
 }) => {
   const [groupOverlay, setGroupOverlay] = useState<boolean>(false);
@@ -98,12 +95,9 @@ const GroupCard: React.FC<IGroupCard> = ({
             </div>
           </div>
           <div
-            onClick={
-              isMember ? () => router.push(`/forum/group/${id}`) : undefined
-            }
             className={`{w-full mb-3 bg-white border p-2 border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 ${
               groupId === id ? "block" : "hidden"
-            } ${isMember && "cursor-pointer"} `}
+            } `}
           >
             <div className="flex justify-end mt-1 mr-1">
               <Image
@@ -116,30 +110,30 @@ const GroupCard: React.FC<IGroupCard> = ({
                 alt="up"
               />
             </div>
-              <div className={`flex justify-end px-4 pt-4`}>
-                {groupOverlay && (
-                  <Overlay groupOverlay={groupOverlay}>
-                    <ul className="py-2" aria-labelledby="dropdownButton">
-                      <li>
-                        <Button
-                          onClick={() => {
-                            console.log("clicked");
-                          }}
-                          text="Edit"
-                          style="block w-full px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                        />
-                      </li>
-                      <li>
-                        <Button
-                          onClick={() => {}}
-                          text="Delete"
-                          style="block w-full px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                        />
-                      </li>
-                    </ul>
-                  </Overlay>
-                )}
-              </div>
+            <div className={`flex justify-end px-4 pt-4`}>
+              {groupOverlay && (
+                <Overlay groupOverlay={groupOverlay}>
+                  <ul className="py-2" aria-labelledby="dropdownButton">
+                    <li>
+                      <Button
+                        onClick={() => {
+                          console.log("clicked");
+                        }}
+                        text="Edit"
+                        style="block w-full px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                      />
+                    </li>
+                    <li>
+                      <Button
+                        onClick={() => {}}
+                        text="Delete"
+                        style="block w-full px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                      />
+                    </li>
+                  </ul>
+                </Overlay>
+              )}
+            </div>
             <div className="flex flex-col items-center pb-2">
               <Image
                 className="mb-3 rounded-full shadow-lg"
@@ -148,29 +142,38 @@ const GroupCard: React.FC<IGroupCard> = ({
                 width="30"
                 alt="pic"
               />
-              <h5 className="mb-1 text-xs font-medium text-gray-900 dark:text-white">
-                <span className="rounded-lg font-bold text-xs">Creator:</span>{" "}
-                {creator}
-              </h5>
-              <span className="text-xs text-black dark:text-black">
-                <span className="rounded-lg m-auto font-bold text-xs">
-                  Group:
-                </span>{" "}
-                {groupName}
-              </span>
-              <p className="text-black text-center bg-gray-200 p-1 border rounded-lg text-xs mt-2 px-6">{`${description.slice(
-                0,
-                100
-              )}...`}</p>
+              <div
+                onClick={
+                  isMember ? () => router.push(`/forum/group/${id}`) : undefined
+                }
+                className={`flex flex-col justify-center items-center cursor-pointer ${
+                  isMember && "cursor-pointer"
+                }`}
+              >
+                <h5 className="mb-1 text-xs font-medium text-gray-900 dark:text-white">
+                  <span className="rounded-lg font-bold text-xs">Creator:</span>{" "}
+                  {creator}
+                </h5>
+                <span className="text-xs text-black dark:text-black">
+                  <span className="rounded-lg m-auto font-bold text-xs">
+                    Group:
+                  </span>{" "}
+                  {groupName}
+                </span>
+                <p className="text-black text-center bg-gray-200 p-1 border rounded-lg text-xs mt-2 px-6">{`${description.slice(
+                  0,
+                  100
+                )}...`}</p>
+              </div>
 
               <div className="flex flex-col space-y-2">
                 {isMember ? (
                   <>
                     <Select text="Group Members">
-                      {group.Group_members.map(
-                        (mem: GroupMemberObject, idx: number) => (
-                          <option key={idx} value={mem.User.username}>
-                            {mem.User.username}
+                      {members.map(
+                        (mem: string, idx: number) => (
+                          <option key={idx} value={mem}>
+                            {mem}
                           </option>
                         )
                       )}
@@ -178,7 +181,7 @@ const GroupCard: React.FC<IGroupCard> = ({
                     {discussions && discussions.length > 0 && (
                       <Select text="Discussions">
                         {discussions.map(
-                          (discussion: DiscussionObject, idx: number) => (
+                          (discussion: discussionObj, idx: number) => (
                             <option key={idx} value={discussion.title}>
                               {discussion.title}
                             </option>
@@ -197,7 +200,10 @@ const GroupCard: React.FC<IGroupCard> = ({
                   <Button
                     id="joinGroup"
                     text="Join Group"
-                    onClick={() => {}}
+                    onClick={() => {
+                      openModal();
+                      selectGroup(id, groupName);
+                    }}
                     style="bg-gray-950 border mt-2 rounded-lg p-1 text-white text-sm font-medium"
                   />
                 )}

@@ -16,7 +16,7 @@ import { Footer } from "@/components/footer";
 import { getUserDetails } from "@/slices/userSlice";
 import PulseAnimation from "@/components/animations/PulseAnimations";
 import UserDetailComp from "@/components/user/UserDetailsComp";
-import AlertDismissible from "@/components/alert/Alert";
+import { Reusables } from "@/utils/reusables";
 
 const UserDetail = () => {
   const [authToken, setAuthToken] = useState<string | null>("");
@@ -27,7 +27,9 @@ const UserDetail = () => {
   const userDetail = useAppSelector((state) => state.user);
   const [updateCompleted, setUpdateCompleted] = useState<boolean>(false);
 
-  console.log("user details", userDetail.userDetails);
+  const {
+    openIsCreateGroup
+  } = Reusables();
 
   useEffect(() => {
     if (userDetailId) {
@@ -66,6 +68,7 @@ const UserDetail = () => {
               handleCloseRegisterModal={() => {}}
               handleOpenLoginModal={() => {}}
               handleCloseLoginModal={() => {}}
+              openIsCreateGroup={openIsCreateGroup}
             />
           }
         >

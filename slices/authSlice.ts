@@ -63,7 +63,7 @@ export const registerUser = createAsyncThunk<
 export const loginUser = createAsyncThunk<
   string,
   ILoginForm,
-  { rejectValue: any}
+  { rejectValue: any }
 >("auth/login", async (credentials, thunkAPI) => {
   try {
     const response = await axios.post(`${url}/users/login`, {
@@ -82,37 +82,45 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    loadUser(state, action) {
-      const token = typeof window !== "undefined" && localStorage.getItem("token")
-      if (token) {
-        const decodedToken:DecodedJwt = jwtDecode(token);
-        // Checl if the token has expired
-        const currentTime = Date.now() / 1000 // convert to seconds
-        if (decodedToken.exp && decodedToken.exp < currentTime) {
-          // Token has expired, log the user out
-          typeof window !== "undefined" && localStorage.removeItem("token")
-          return {
-            ...state,
-            token: null,
-            name: "",
-            email: "",
-            uername: "",
-            id: null,
-            userLoaded: true
-          }
-        }
+    loadUser(state) {
+      const token =
+        typeof window !== "undefined" && localStorage.getItem("token");
+
+      if (!token) {
+        // Token is not present, user is not logged in
         return {
           ...state,
-          token,
-          user: decodedToken,
-          userLoaded: true,
-        };
-      } else {
-        return {
-          ...state,
+          token: null,
+          name: "",
+          email: "",
+          username: "",
+          id: null,
           userLoaded: true,
         };
       }
+
+      const decodedToken: DecodedJwt = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+
+      if (decodedToken.exp && decodedToken.exp < currentTime) {
+        // Token has expired, log the user out
+        typeof window !== "undefined" && localStorage.removeItem("token");
+        return {
+          ...state,
+          token: null,
+          name: "",
+          email: "",
+          username: "",
+          id: null,
+          userLoaded: true,
+        };
+      }
+      return {
+        ...state,
+        token,
+        user: decodedToken,
+        userLoaded: true,
+      };
     },
     logoutUser(state, action) {
       localStorage.removeItem("token");

@@ -69,7 +69,7 @@ const Pagination: React.FC<IPagination> = ({
         <p className="text-black text-xs p-1 font-medium">
           Showing {startIndex + 1} - {endIndex} of {totalItems} items
         </p>
-        <div className="flex space-x-2">
+        <div className="grid grid-cols-4 gap-3 p-2">
           <button
             className={`flex justify-center p-1 items px-2-center rounded-lg text-xs text-white ${
               currentPage === 1 ? "bg-red-300" : "bg-red-400"

@@ -12,12 +12,17 @@ import LoginModal from "@/components/auth/LoginModal";
 import { useRouter } from "next/router";
 import { HeaderShrinker } from "@/utils/HeaderShrinker";
 import NavbarMobile from "@/components/navigation/NavbarMobile";
+import { Reusables } from "@/utils/reusables";
 
 export default function Home() {
   const router = useRouter()
   const [isRegisterModalOpen, setIsRegisterModalOpen] =
     useState<boolean>(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+
+  const {
+    openIsCreateGroup,
+  } = Reusables();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -55,6 +60,7 @@ export default function Home() {
               handleCloseRegisterModal={handleCloseRegisterModal}
               handleOpenLoginModal={handleOpenLoginModal}
               handleCloseLoginModal={handleCloseLoginModal}
+              openIsCreateGroup={openIsCreateGroup}
             />
           }
         >

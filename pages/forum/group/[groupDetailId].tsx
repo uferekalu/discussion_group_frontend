@@ -11,12 +11,13 @@ import NavbarMobile from "@/components/navigation/NavbarMobile";
 import { Background } from "@/components/background/Background";
 import { Footer } from "@/components/footer";
 import GroupCard from "@/components/group/GroupCard";
-import { DecodedJwt } from "@/utils/interface";
+import { DecodedJwt, allGroupItem } from "@/utils/interface";
 import jwtDecode from "jwt-decode";
 import {
   allGroups,
   getAGroup,
   getAllDiscussionsInAGroup,
+  getAllNotifications,
 } from "@/slices/groupSlice";
 import Pagination from "@/components/paginatedData/Pagination";
 import HorizontalSlider from "@/components/slider/HorizontalSlider";
@@ -24,6 +25,12 @@ import { Navbar } from "@/components/navigation/Navbar";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import GroupDetailComp from "@/components/groupDetailComp/GroupDetailComp";
 import PulseAnimation from "@/components/animations/PulseAnimations";
+import AuthNav from "@/components/navigation/AuthNav";
+import { Reusables } from "@/utils/reusables";
+import ReusableModal from "@/components/modal/ReusableModal";
+import CreateGroup from "@/components/group/CreateGroup";
+import HasJoinedNotification from "@/components/group/HasJoinedNotification";
+import CreateGroupNotification from "@/components/group/CreateGroupNotification";
 
 interface Item {
   id: number;
@@ -50,6 +57,15 @@ const GroupDetails = () => {
   const [idFromGroup, setIdFromGroup] = useState();
   const [isMember, setIsMember] = useState<boolean>(false);
 
+  const {
+    openCreateGroup,
+    handleOpenCreateGroup,
+    handleCloseCreateGroup,
+    isCreateGroup,
+    closeIsCreateGroup,
+    openIsCreateGroup,
+  } = Reusables();
+
   const itemsPerPage = 7;
   const totalItems = groups.allGroups.length;
 
@@ -64,6 +80,10 @@ const GroupDetails = () => {
   const handleIdFromGroup = (id: any) => {
     setIdFromGroup(id);
   };
+
+  useEffect(() => {
+    dispatch(getAllNotifications());
+  }, [dispatch]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -84,10 +104,6 @@ const GroupDetails = () => {
       dispatch(getAGroup(groupDetailId));
       dispatch(getAllDiscussionsInAGroup(groupDetailId));
     }
-    // if (groupId) {
-    //   dispatch(getAGroup(groupId));
-    //   dispatch(getAllDiscussionsInAGroup(groupId));
-    // }
   }, [dispatch, idFromGroup, groupDetailId]);
 
   useEffect(() => {
@@ -115,22 +131,23 @@ const GroupDetails = () => {
   }: RenderItemProps): JSX.Element[] => {
     return groups.allGroups
       .slice(startIndex, endIndex)
-      .map((item: Item) => (
+      .map((item: allGroupItem) => (
         <GroupCard
           key={item.id}
           id={item.id}
           creator={item.username}
           groupName={item.name}
           groupError={groups.groupError}
-          groupStatus={groups.groupStatus}
           handleIdFromGroup={handleIdFromGroup}
           handleGroupId={handleGroupId}
           groupId={groupId}
           description={item.description}
-          group={group.groupDetails}
+          members={item.allUsers}
           user={user}
           isMember={isMember}
-          discussions={discussions.discussions}
+          discussions={item.allDiscussions}
+          openModal={() => {}}
+          selectGroup={() => {}}
         />
       ));
   };
@@ -152,41 +169,22 @@ const GroupDetails = () => {
               handleCloseRegisterModal={() => {}}
               handleOpenLoginModal={() => {}}
               handleCloseLoginModal={() => {}}
+              openIsCreateGroup={openIsCreateGroup}
+              notifications={groups.allNotifications}
+              notificationStatus={groups.allNotificationsStatus}
+              notificationError={groups.allNotificationsError}
             />
           }
         >
           {authToken && (
             <>
-              <div className="flex mr-1 mt-1">
-                <li className="bi bi-bell-fill text-white text-xl mt-1 mr-1 list-none"></li>
-                <span className="flex w-4 h-4 -mt-1 p-3 -ml-2 justify-center items-center text-xs m-auto bg-red-700 rounded-lg text-white">
-                  0
-                </span>
-              </div>
-              <li>
-                <Button
-                  id="invite"
-                  text="Send an Invite"
-                  onClick={() => {}}
-                  style="bg-red-400 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
-                />
-              </li>
-              <li>
-                <Button
-                  id="join"
-                  text="Join A Group"
-                  onClick={() => {}}
-                  style="bg-blue-400 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
-                />
-              </li>
-              <li>
-                <Button
-                  id="logout"
-                  text="Logout"
-                  onClick={handleLogout}
-                  style="bg-gray-950 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
-                />
-              </li>
+              <AuthNav
+                handleLogout={handleLogout}
+                openIsCreateGroup={openIsCreateGroup}
+                notifications={groups.allNotifications}
+                notificationStatus={groups.allNotificationsStatus}
+                notificationError={groups.allNotificationsError}
+              />
             </>
           )}
         </Navbar>
@@ -285,6 +283,26 @@ const GroupDetails = () => {
         </div>
       </Background>
       <Footer />
+      <ReusableModal
+        open={isCreateGroup}
+        onClose={closeIsCreateGroup}
+        deSelectGroup={() => {}}
+      >
+        <CreateGroup
+          closeIsCreateGroup={closeIsCreateGroup}
+          handleOpenCreateGroup={handleOpenCreateGroup}
+        />
+      </ReusableModal>
+      <ReusableModal
+        open={openCreateGroup}
+        onClose={handleCloseCreateGroup}
+        deSelectGroup={() => {}}
+      >
+        <CreateGroupNotification
+          closeHasJoined={handleCloseCreateGroup}
+          text={`Group created successfully`}
+        />
+      </ReusableModal>
     </div>
   );
 };

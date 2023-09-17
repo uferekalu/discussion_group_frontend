@@ -1,6 +1,5 @@
 import { NextPage } from "next";
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/button/Button";
+import React, { useCallback, useEffect, useState } from "react";
 import { Meta } from "@/components/layout/Meta";
 import { Section } from "@/components/layout/Section";
 import { Logo } from "@/components/logo/Logo";
@@ -13,16 +12,20 @@ import NavbarMobile from "@/components/navigation/NavbarMobile";
 import { Background } from "@/components/background/Background";
 import { Footer } from "@/components/footer";
 import GroupCard from "@/components/group/GroupCard";
-import { DecodedJwt, Item } from "@/utils/interface";
+import { DecodedJwt, Item, allGroupItem } from "@/utils/interface";
 import jwtDecode from "jwt-decode";
-import {
-  allGroups,
-  getAGroup,
-  getAllDiscussionsInAGroup,
-} from "@/slices/groupSlice";
+import { allGroups, getAGroup, getAllNotifications, joinAGroup } from "@/slices/groupSlice";
 import Pagination from "@/components/paginatedData/Pagination";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import PulseAnimation from "@/components/animations/PulseAnimations";
+import GroupsToJoin from "@/components/groupsToJoin/GroupsToJoin";
+import ReusableModal from "@/components/modal/ReusableModal";
+import JoinGroupContent from "@/components/group/JoinGroupContent";
+import HasJoinedNotification from "@/components/group/HasJoinedNotification";
+import AuthNav from "@/components/navigation/AuthNav";
+import CreateGroup from "@/components/group/CreateGroup";
+import { Reusables } from "@/utils/reusables";
+import CreateGroupNotification from "@/components/group/CreateGroupNotification";
 interface RenderItemProps {
   startIndex: number;
   endIndex: number;
@@ -40,6 +43,119 @@ const Forum: NextPage = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [idFromGroup, setIdFromGroup] = useState();
   const [isMember, setIsMember] = useState<boolean>(false);
+  const [groupsToJoin, setGroupsToJoin] = useState<string[] | unknown>([]);
+  const [belongsTo, setBelongsTo] = useState<string[] | unknown>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isJoinAGroup, setIsJoinAGroup] = useState<boolean>(false);
+  const [isBelongsTo, setIsBelongsTo] = useState<boolean>(false);
+  const [chosenGroup, setChosenGroup] = useState<{
+    id: any;
+    name: string;
+  }>({
+    id: null,
+    name: "",
+  });
+  const [confirmJoinGroup, setConfirmJoinGroup] = useState<boolean>(false);
+  const [hasJoined, setHasJoined] = useState<boolean>(false);
+
+  const {
+    openCreateGroup,
+    handleOpenCreateGroup,
+    handleCloseCreateGroup,
+    isCreateGroup,
+    closeIsCreateGroup,
+    openIsCreateGroup,
+  } = Reusables();
+
+  console.log("all notifications", groups.allNotifications)
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const openHasJoined = () => setHasJoined(true);
+  const closeHasJoined = () => setHasJoined(false);
+
+  const selectGroup = (id: number, name: string) => {
+    setChosenGroup({
+      id,
+      name,
+    });
+  };
+
+  useEffect(() => {
+    dispatch(getAllNotifications())
+  }, [dispatch])
+
+  useEffect(() => {
+    const handleJoinGroupAction = async () => {
+      if (confirmJoinGroup) {
+        await dispatch(joinAGroup(chosenGroup?.id));
+        await dispatch(allGroups());
+        openHasJoined();
+        closeModal();
+      }
+    };
+    handleJoinGroupAction();
+  }, [dispatch, confirmJoinGroup, chosenGroup.id]);
+
+  const deSelectGroup = () => {
+    setChosenGroup({
+      id: null,
+      name: "",
+    });
+  };
+
+  const handleConfirmJoinGroup = () => {
+    setConfirmJoinGroup(true);
+  };
+
+  const handleGroupsUserBelongsTo = useCallback(() => {
+    const allGroups = groups.allGroups;
+    const groupsUserBelong = new Set();
+
+    for (let group of allGroups) {
+      const groupMembers = group.allUsers;
+      let shoulBelongTo = false;
+
+      for (let member of groupMembers) {
+        if (user?.username === member) {
+          shoulBelongTo = true;
+          groupsUserBelong.add({ id: group.id, name: group.name });
+        }
+      }
+    }
+    setIsBelongsTo(true);
+    setIsJoinAGroup(false);
+    setBelongsTo(Array.from(groupsUserBelong));
+  }, [groups.allGroups, user?.username]);
+
+  const handleJoinAGroup = useCallback(() => {
+    const allGroups = groups.allGroups;
+    const groupsToJoin = new Set();
+
+    for (let group of allGroups) {
+      const groupMembers = group.allUsers;
+      let shouldJoinGroup = true;
+
+      for (let member of groupMembers) {
+        if (user?.username === member) {
+          shouldJoinGroup = false;
+          break;
+        }
+      }
+
+      if (shouldJoinGroup) {
+        groupsToJoin.add({ id: group.id, name: group.name });
+      }
+    }
+    setIsJoinAGroup(true);
+    setIsBelongsTo(false);
+    setGroupsToJoin(Array.from(groupsToJoin));
+  }, [groups.allGroups, user?.username]);
+
+  useEffect(() => {
+    handleJoinAGroup();
+  }, [groups.allGroups, user?.username, handleJoinAGroup]);
 
   const itemsPerPage = 7;
   const totalItems = groups.allGroups.length;
@@ -67,13 +183,13 @@ const Forum: NextPage = () => {
   }, [router]);
 
   useEffect(() => {
-    dispatch(allGroups())
+    dispatch(allGroups());
     if (idFromGroup) {
       dispatch(getAGroup(idFromGroup));
     }
     if (groupId) {
       dispatch(getAGroup(groupId));
-      dispatch(getAllDiscussionsInAGroup(groupId));
+      // dispatch(getAllDiscussionsInAGroup(groupId));
     }
   }, [dispatch, idFromGroup, groupId]);
 
@@ -102,7 +218,7 @@ const Forum: NextPage = () => {
   }: RenderItemProps): JSX.Element[] => {
     return groups.allGroups
       .slice(startIndex, endIndex)
-      .map((item: Item) => (
+      .map((item: allGroupItem) => (
         <GroupCard
           key={item.id}
           id={item.id}
@@ -113,10 +229,12 @@ const Forum: NextPage = () => {
           handleGroupId={handleGroupId}
           groupId={groupId}
           description={item.description}
-          group={group}
+          members={item.allUsers}
           user={user}
           isMember={isMember}
-          discussions={discussions.discussions}
+          discussions={item.allDiscussions}
+          openModal={openModal}
+          selectGroup={selectGroup}
         />
       ));
   };
@@ -138,42 +256,21 @@ const Forum: NextPage = () => {
               handleCloseRegisterModal={() => {}}
               handleOpenLoginModal={() => {}}
               handleCloseLoginModal={() => {}}
+              openIsCreateGroup={openIsCreateGroup}
+              notifications={groups.allNotifications}
+              notificationStatus={groups.allNotificationsStatus}
+              notificationError={groups.allNotificationsError}
             />
           }
         >
           {authToken && (
-            <>
-              <div className="flex mr-1 mt-1">
-                <li className="bi bi-bell-fill text-white text-xl mt-1 mr-1 list-none"></li>
-                <span className="flex w-4 h-4 -mt-1 p-3 -ml-2 justify-center items-center text-xs m-auto bg-red-700 rounded-lg text-white">
-                  0
-                </span>
-              </div>
-              <li>
-                <Button
-                  id="invite"
-                  text="Send an Invite"
-                  onClick={() => {}}
-                  style="bg-red-400 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
-                />
-              </li>
-              <li>
-                <Button
-                  id="join"
-                  text="Join A Group"
-                  onClick={() => {}}
-                  style="bg-blue-400 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
-                />
-              </li>
-              <li>
-                <Button
-                  id="logout"
-                  text="Logout"
-                  onClick={handleLogout}
-                  style="bg-gray-950 border rounded-lg p-1 text-white text-xs font-medium hover:bg-white hover:text-black hover:border-none"
-                />
-              </li>
-            </>
+            <AuthNav
+              handleLogout={handleLogout}
+              openIsCreateGroup={openIsCreateGroup}
+              notifications={groups.allNotifications}
+              notificationStatus={groups.allNotificationsStatus}
+              notificationError={groups.allNotificationsError}
+            />
           )}
         </Navbar>
       </Section>
@@ -184,13 +281,20 @@ const Forum: NextPage = () => {
             height="min-h-screen"
             xPadding="px-4"
             yPadding="py-6"
-            title="List of Groups"
-            description="You can look through the below groups and join any group of your interest"
+            title="All Groups"
+            description="You can look through the below groups and join any group of
+            your interest if you are not already a member!!"
             customBg="bg-white"
           >
-            {groups.groupStatus === "pending" ? (
+            {groups.groupStatus === "pending" && (
               <PulseAnimation num={3} display="grid grid-cols-1 gap-4" />
-            ) : (
+            )}
+            {groups.groupStatus === "rejected" && (
+              <div className="text-black text-sm">
+                Not Available at the moment. Please refresh the page...
+              </div>
+            )}
+            {groups.groupStatus === "success" && (
               <Pagination
                 currentPage={currentPage}
                 totalPages={Math.ceil(totalItems / itemsPerPage)}
@@ -207,37 +311,116 @@ const Forum: NextPage = () => {
             xPadding="px-4"
             yPadding="py-6"
           >
-            <PulseAnimation num={12} display="grid sm:grid-cols-3 gap-4"/>
+            {groups.groupStatus === "pending" && (
+              <PulseAnimation num={12} display="grid sm:grid-cols-3 gap-4" />
+            )}
+            {groups.groupStatus === "success" && (
+              <GroupsToJoin
+                groupsToJoin={groupsToJoin}
+                openModal={openModal}
+                selectGroup={selectGroup}
+                handleGroupsUserBelongsTo={handleGroupsUserBelongsTo}
+                handleJoinAGroup={handleJoinAGroup}
+                belongsTo={belongsTo}
+                isJoinAGroup={isJoinAGroup}
+                isBelongTo={isBelongsTo}
+              />
+            )}
           </Section>
         </div>
-        <div className="flex flex-col sm:hidden space-y-2 w-full">
+        <div className="flex flex-col itens-center justify-center sm:hidden space-y-2 w-full">
           <Section
             width="w-full"
             height="min-h-screen"
             xPadding="px-4"
-            yPadding="py-6"
-            title="List of Groups"
-            description="You can look through the below groups and join any group of your interest"
+            yPadding="py-2"
             customBg="bg-white"
           >
-            {groups.groupStatus === "pending" ? (
-              <PulseAnimation num={3} display="grid grid-cols-1 gap-4"/>
-            ) : (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={Math.ceil(totalItems / itemsPerPage)}
-                onPageChange={handlePageChange}
-                itemsPerPage={itemsPerPage}
-                totalItems={totalItems}
-                renderItem={renderItem}
+            {groups.groupStatus === "pending" && (
+              <PulseAnimation num={3} display="grid grid-cols-1 gap-4" />
+            )}
+            {groups.groupStatus === "success" && (
+              <GroupsToJoin
+                groupsToJoin={groupsToJoin}
+                openModal={openModal}
+                selectGroup={selectGroup}
+                handleGroupsUserBelongsTo={handleGroupsUserBelongsTo}
+                handleJoinAGroup={handleJoinAGroup}
+                belongsTo={belongsTo}
+                isJoinAGroup={isJoinAGroup}
+                isBelongTo={isBelongsTo}
               />
+            )}
+            {groups.groupStatus === "pending" && (
+              <PulseAnimation num={3} display="grid grid-cols-1 gap-4" />
+            )}
+            {groups.groupStatus === "success" && (
+              <div className="flex flex-col space-y-2 justify-center items-center m-auto p-3">
+                <h2 className="text-white font-medium text-sm mb-3 p-3 bg-black rounded-lg shadow-lg">
+                  All Groups
+                </h2>
+                <p className="text-black bg-white text-xs mb-3 p-2 rounded-lg shadow-lg text-center">
+                  You can look through the below groups and join any group of
+                  your interest if you are not already a member!!
+                </p>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(totalItems / itemsPerPage)}
+                  onPageChange={handlePageChange}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={totalItems}
+                  renderItem={renderItem}
+                />
+              </div>
             )}
           </Section>
         </div>
       </Background>
       <Footer />
+      <ReusableModal
+        open={isModalOpen}
+        onClose={closeModal}
+        deSelectGroup={deSelectGroup}
+      >
+        <JoinGroupContent
+          closeModal={closeModal}
+          deSelectGroup={deSelectGroup}
+          handleConfirmJoinGroup={handleConfirmJoinGroup}
+          chosenGroup={chosenGroup}
+        />
+      </ReusableModal>
+      <ReusableModal
+        open={hasJoined}
+        onClose={closeHasJoined}
+        deSelectGroup={() => {}}
+      >
+        <HasJoinedNotification
+          closeHasJoined={closeHasJoined}
+          text={groups.joinAGroupResult}
+        />
+      </ReusableModal>
+      <ReusableModal
+        open={isCreateGroup}
+        onClose={closeIsCreateGroup}
+        deSelectGroup={() => {}}
+      >
+        <CreateGroup
+          closeIsCreateGroup={closeIsCreateGroup}
+          handleOpenCreateGroup={handleOpenCreateGroup}
+        />
+      </ReusableModal>
+      <ReusableModal
+        open={openCreateGroup}
+        onClose={handleCloseCreateGroup}
+        deSelectGroup={() => {}}
+      >
+        <CreateGroupNotification
+          closeHasJoined={handleCloseCreateGroup}
+          text={`Group created successfully`}
+        />
+      </ReusableModal>
     </div>
   );
-}
+};
 
-export default Forum
+export default Forum;

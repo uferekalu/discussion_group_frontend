@@ -2,7 +2,7 @@ export interface AuthState {
   token: string | null;
   name: string;
   email: string;
-  username: string
+  username: string;
   id: number | null;
   registerStatus: string;
   registerError: string;
@@ -26,6 +26,16 @@ export interface DecodedJwt {
   exp?: number;
 }
 
+export interface discussionObj {
+  id: number;
+  title: string;
+  content: string;
+  author_id: number;
+  group_id: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AllGroupsObject {
   id: number;
   name: string;
@@ -34,6 +44,8 @@ export interface AllGroupsObject {
   creatorName: string;
   username: string;
   createdAt: string;
+  allUsers: string[];
+  allDiscussions: discussionObj[];
 }
 
 export interface UserObject {
@@ -47,12 +59,12 @@ export interface UserObject {
 }
 
 export interface User {
-  userDetails: UserObject
-  userStatus: string
-  userError: string
-  userUpdateStatus: string
-  userUpdateError: string
-  userUpdateMessage: string
+  userDetails: UserObject;
+  userStatus: string;
+  userError: string;
+  userUpdateStatus: string;
+  userUpdateError: string;
+  userUpdateMessage: string;
 }
 
 export interface GroupMemberObject {
@@ -92,9 +104,9 @@ export interface Item {
 }
 
 export interface UploadImage {
-  uploadPath: string
-  uploadStatus: string
-  uploadError: string
+  uploadPath: string;
+  uploadStatus: string;
+  uploadError: string;
 }
 
 export interface UserUpdateData {
@@ -104,5 +116,28 @@ export interface UserUpdateData {
   country: string;
   sex: string;
   hobbies: string;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export interface allGroupItem {
+  id: number;
+  name: string;
+  description: string;
+  creator_id: number;
+  creatorName: string;
+  username: string;
+  createdAt: string;
+  allUsers: string[];
+  allDiscussions: discussionObj[];
+}
+
+export interface AllNotifications {
+  id: number
+  sender: string;
+  group: string;
+  discussion: string | null;
+  content: string;
+  message: string
+  status: string;
+  createdAt: string;
 }

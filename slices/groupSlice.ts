@@ -1,7 +1,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { setHeaders, url } from "./api";
-import { AllGroupsObject, DiscussionObject, GroupDetails } from "@/utils/interface";
+import {
+  AllGroupsObject,
+  AllNotifications,
+  DiscussionObject,
+  GroupDetails,
+} from "@/utils/interface";
 
 interface GroupSlice {
   allGroups: AllGroupsObject[];
@@ -13,6 +18,18 @@ interface GroupSlice {
   singleGroupError: string;
   discussionStatus: string;
   discussionError: string;
+  joinAGroupResult: string;
+  joinAGroupStatus: string;
+  joinAGroupError: string;
+  createGroup: {
+    name: string;
+    description: string;
+  };
+  createGroupStatus: string;
+  createGroupError: string;
+  allNotifications: AllNotifications[];
+  allNotificationsStatus: string;
+  allNotificationsError: string;
 }
 
 const initialState: GroupSlice = {
@@ -30,6 +47,18 @@ const initialState: GroupSlice = {
   singleGroupError: "",
   discussionStatus: "",
   discussionError: "",
+  joinAGroupResult: "",
+  joinAGroupStatus: "",
+  joinAGroupError: "",
+  createGroup: {
+    name: "",
+    description: "",
+  },
+  createGroupStatus: "",
+  createGroupError: "",
+  allNotifications: [],
+  allNotificationsStatus: "",
+  allNotificationsError: "",
 };
 
 export const allGroups = createAsyncThunk<
@@ -41,6 +70,12 @@ export const allGroups = createAsyncThunk<
     const response = await axios.get(`${url}/groups/all-groups`, setHeaders());
     const { allGroups } = response.data;
     localStorage.setItem("allGroups", JSON.stringify(allGroups));
+    allGroups.sort((a: AllGroupsObject, b: AllGroupsObject) => {
+      const aCreatedAt = new Date(a.createdAt);
+      const bCreatedAt = new Date(b.createdAt);
+      return bCreatedAt.getTime() - aCreatedAt.getTime();
+    });
+
     return allGroups;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.response.data);
@@ -76,6 +111,72 @@ export const getAllDiscussionsInAGroup = createAsyncThunk<
     const { discussions } = response.data;
     localStorage.setItem("discussions", JSON.stringify(discussions));
     return discussions;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
+export const joinAGroup = createAsyncThunk<string, { rejectValue: any }>(
+  "group/joinGroup",
+  async (id, thunkAPI) => {
+    try {
+      const result = await axios.post(
+        `${url}/groups/join-a-group/${id}`,
+        null,
+        setHeaders()
+      );
+      const { message } = result.data;
+      return message;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data);
+    }
+  }
+);
+
+interface ICreateForm {
+  name: string;
+  description: string;
+}
+
+export const createAGroup = createAsyncThunk<
+  string,
+  { data: ICreateForm },
+  { rejectValue: any }
+>("group/createGroup", async ({ data }, thunkAPI) => {
+  try {
+    const result = await axios.post(
+      `${url}/groups/create-group`,
+      {
+        name: data.name,
+        description: data.description,
+      },
+      setHeaders()
+    );
+    const { group } = result.data;
+    return group;
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
+export const getAllNotifications = createAsyncThunk<
+  AllNotifications[],
+  void,
+  { rejectValue: any }
+>("group/allNotifications", async (_, thunkAPI) => {
+  try {
+    const response = await axios.get(
+      `${url}/groups/all-notifications`,
+      setHeaders()
+    );
+    const { allNotifications } = response.data;
+    allNotifications.sort((a: AllNotifications, b: AllNotifications) => {
+      const aCreatedAt = new Date(a.createdAt);
+      const bCreatedAt = new Date(b.createdAt);
+      return bCreatedAt.getTime() - aCreatedAt.getTime();
+    });
+
+    return allNotifications;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.response.data);
   }
@@ -164,6 +265,78 @@ const groupSlice = createSlice({
         };
       }
     );
+    builder.addCase(joinAGroup.pending, (state, action) => {
+      return {
+        ...state,
+        joinAGroupStatus: "pending",
+      };
+    });
+    builder.addCase(joinAGroup.fulfilled, (state, action: any) => {
+      if (action.payload) {
+        return {
+          ...state,
+          joinAGroupStatus: "success",
+          joinAGroupResult: action.payload,
+        };
+      } else {
+        return state;
+      }
+    });
+    builder.addCase(joinAGroup.rejected, (state, action: any) => {
+      return {
+        ...state,
+        joinAGroupStatus: "rejected",
+        joinAGroupError: action.payload,
+      };
+    });
+    builder.addCase(createAGroup.pending, (state, action) => {
+      return {
+        ...state,
+        createGroupStatus: "pending",
+      };
+    });
+    builder.addCase(createAGroup.fulfilled, (state, action: any) => {
+      if (action.payload) {
+        return {
+          ...state,
+          createGroupStatus: "success",
+          createGroup: action.payload,
+        };
+      } else {
+        return state;
+      }
+    });
+    builder.addCase(createAGroup.rejected, (state, action: any) => {
+      return {
+        ...state,
+        createGroupStatus: "rejected",
+        createGroupError: action.payload.error,
+      };
+    });
+    builder.addCase(getAllNotifications.pending, (state, action) => {
+      return {
+        ...state,
+        allNotificationsStatus: "pending",
+      };
+    });
+    builder.addCase(getAllNotifications.fulfilled, (state, action: any) => {
+      if (action.payload) {
+        return {
+          ...state,
+          allNotificationsStatus: "success",
+          allNotifications: action.payload,
+        };
+      } else {
+        return state;
+      }
+    });
+    builder.addCase(getAllNotifications.rejected, (state, action: any) => {
+      return {
+        ...state,
+        allNotificationsStatus: "rejected",
+        allNotificationsError: action.payload.error,
+      };
+    });
   },
 });
 
