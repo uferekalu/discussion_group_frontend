@@ -10,6 +10,16 @@ const Reusables = () => {
   const closeIsCreateGroup = () => setIsCreateGroup(false);
   const openIsCreateGroup = () => setIsCreateGroup(true);
 
+  const buttonVariants = {
+    hover: {
+      scale: 1.1,
+      transition: {
+        duration: 0.3,
+        yoyo: Infinity,
+      },
+    },
+  };
+
   return {
     isCreateGroup,
     setIsCreateGroup,
@@ -18,6 +28,7 @@ const Reusables = () => {
     openCreateGroup,
     handleOpenCreateGroup,
     handleCloseCreateGroup,
+    buttonVariants
   };
 };
 

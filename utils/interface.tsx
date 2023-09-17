@@ -141,3 +141,27 @@ export interface AllNotifications {
   status: string;
   createdAt: string;
 }
+
+export interface GroupSlice {
+  allGroups: AllGroupsObject[];
+  groupDetails: GroupDetails;
+  discussions: DiscussionObject[];
+  groupStatus: string;
+  groupError: string;
+  singleGroupStatus: string;
+  singleGroupError: string;
+  discussionStatus: string;
+  discussionError: string;
+  joinAGroupResult: string;
+  joinAGroupStatus: string;
+  joinAGroupError: string;
+  createGroup: {
+    name: string;
+    description: string;
+  };
+  createGroupStatus: string;
+  createGroupError: string;
+  allNotifications: AllNotifications[];
+  allNotificationsStatus: string;
+  allNotificationsError: string;
+}

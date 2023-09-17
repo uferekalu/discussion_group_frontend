@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Background } from "../background/Background";
 import { useRouter } from "next/router";
 import { Button } from "../button/Button";
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logoutUser } from "@/slices/authSlice";
 import { Notification } from "../notification/Notification";
 import { motion } from "framer-motion";
-import { AllNotifications } from "@/utils/interface";
+import { AllNotifications, DecodedJwt, GroupSlice } from "@/utils/interface";
+import { Reusables } from "@/utils/reusables";
+import GroupsToJoin from "../groupsToJoin/GroupsToJoin";
+import jwtDecode from "jwt-decode";
 
-const useTypedSelector: TypedUseSelectorHook<RootState> = useSelector;
 interface INavbarMobile {
   handleOpenRegisterModal: () => void;
   handleCloseRegisterModal: () => void;
@@ -19,6 +20,15 @@ interface INavbarMobile {
   notifications: AllNotifications[];
   notificationStatus: string;
   notificationError: string;
+  groups: GroupSlice;
+  groupsToJoin: string[] | unknown;
+  openModal: () => void;
+  selectGroup: (id: number, name: string) => void;
+  handleGroupsUserBelongsTo: () => void;
+  handleJoinAGroup: () => void;
+  belongsTo: string[] | unknown;
+  isJoinAGroup: boolean;
+  isBelongTo: boolean;
 }
 
 const NavbarMobile = (props: INavbarMobile) => {
@@ -26,21 +36,29 @@ const NavbarMobile = (props: INavbarMobile) => {
   const [authToken, setAuthToken] = useState<string | null>(null);
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
-  const dispatch = useDispatch<AppDispatch>();
-  const auth = useTypedSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
   const [showNotification, setShowNotification] = useState<boolean>(false);
+  const [hoverButton, setHoverButton] = useState<string | null>(null);
+
+  const { buttonVariants } = Reusables();
 
   const handleShowNotification = () => {
     setShowNotification((prevState) => !prevState);
+    setToggleMenu(false)
   };
 
   const handleToggleMenu = () => {
     setToggleMenu((prevState) => !prevState);
+    setShowNotification(false)
   };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const decodedUser: DecodedJwt = jwtDecode(`${token}`);
     setAuthToken(token);
+    if (!token) {
+      router.push("/");
+    }
   }, [router]);
 
   useEffect(() => {
@@ -94,43 +112,86 @@ const NavbarMobile = (props: INavbarMobile) => {
         >
           <div
             id="togglebar"
-            className="flex fixed top-20 right-0 z-10 mt-1 rounded-lg py-3 w-1/2 h-3/4 ease-in duration-300"
+            className="absolute z-50 top-20 mt-4 sm:w-1/2 w-5/6 sm:right-6 right-0 rounded-lg shadow-lg"
           >
             <Background
               color="bg-gray-100"
               bgImg
               imgUrl='url("/background4.jpeg")'
-              pd="p-6"
+              pd="p-3"
             >
               <div className="flex flex-col space-y-3 w-full">
                 {authToken ? (
-                  <>
-                    <Button
-                      text="Send Invite"
-                      onClick={() => {
-                        setToggleMenu(false);
-                      }}
-                      style="bg-red-400 border:none text-center text-sm rounded-lg p-3 text-white font-medium"
-                    />
-                    <Button
-                      text="Create a Group"
-                      onClick={() => {
-                        setToggleMenu(false);
-                        props.openIsCreateGroup();
-                      }}
-                      style="bg-red-400 border:none text-center text-sm rounded-lg p-3 text-white font-medium"
-                    />
-                    <Button
-                      text="Logout"
-                      onClick={() => {
-                        handleLogout();
-                        setToggleMenu(false);
-                      }}
-                      style="bg-black border:none text-center text-sm rounded-lg p-3 text-white font-medium"
-                    />
-                  </>
+                  <div className="h-96 overflow-y-auto mt-2">
+                    <div className="flex flex-col mt-2">
+                      <div className="flex space-x-2">
+                        <motion.button
+                          variants={buttonVariants}
+                          whileHover="hover"
+                          onMouseEnter={() => setHoverButton("Send Invite")}
+                          onMouseLeave={() => setHoverButton(null)}
+                          onClick={() => {
+                            setToggleMenu(false);
+                          }}
+                          className={`bg-red-400 p-2  rounded-lg shadow-lg text-white text-xs ${
+                            hoverButton === "Send Invite"
+                              ? "hover:bg-teal-300"
+                              : ""
+                          }`}
+                        >
+                          Send Invite
+                        </motion.button>
+                        <motion.button
+                          variants={buttonVariants}
+                          whileHover="hover"
+                          onMouseEnter={() => setHoverButton("Create a Group")}
+                          onMouseLeave={() => setHoverButton(null)}
+                          onClick={() => {
+                            setToggleMenu(false);
+                            props.openIsCreateGroup();
+                          }}
+                          className={`bg-blue-500 p-2  rounded-lg shadow-lg text-white text-xs ${
+                            hoverButton === "Create a Group"
+                              ? "hover:bg-teal-300"
+                              : ""
+                          }`}
+                        >
+                          Create a Group
+                        </motion.button>
+                        <motion.button
+                          variants={buttonVariants}
+                          whileHover="hover"
+                          onMouseEnter={() => setHoverButton("Logout")}
+                          onMouseLeave={() => setHoverButton(null)}
+                          onClick={() => {
+                            handleLogout();
+                            setToggleMenu(false);
+                          }}
+                          className={`bg-black p-2 rounded-lg shadow-lg text-white text-xs ${
+                            hoverButton === "Logout" ? "hover:bg-teal-300" : ""
+                          }`}
+                        >
+                          Logout
+                        </motion.button>
+                      </div>
+                      {props.groups.groupStatus === "success" && (
+                        <GroupsToJoin
+                          groupsToJoin={props.groupsToJoin}
+                          openModal={props.openModal}
+                          selectGroup={props.selectGroup}
+                          handleGroupsUserBelongsTo={
+                            props.handleGroupsUserBelongsTo
+                          }
+                          handleJoinAGroup={props.handleJoinAGroup}
+                          belongsTo={props.belongsTo}
+                          isJoinAGroup={props.isJoinAGroup}
+                          isBelongTo={props.isBelongTo}
+                        />
+                      )}
+                    </div>
+                  </div>
                 ) : (
-                  <>
+                  <div>
                     <Button
                       text="Login"
                       onClick={() => {
@@ -147,7 +208,7 @@ const NavbarMobile = (props: INavbarMobile) => {
                       }}
                       style="bg-gray-950 border:none text-center text-sm rounded-lg p-3 text-white"
                     />
-                  </>
+                  </div>
                 )}
               </div>
             </Background>

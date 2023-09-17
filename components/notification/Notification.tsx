@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { AllNotifications } from "@/utils/interface";
 import { Button } from "../button/Button";
+import PulseAnimation from "../animations/PulseAnimations";
 
 interface INotification {
   showNotification: boolean;
@@ -55,7 +56,13 @@ const Notification: React.FC<INotification> = ({
           </div>
         ));
 
-    return result;
+    return notificationStatus === "pending" ? (
+      <div className="mt-2">
+        <PulseAnimation num={2} display="grid grid-cols-1 gap-4" />
+      </div>
+    ) : (
+      result
+    );
   };
 
   const handleDelete = () => {};

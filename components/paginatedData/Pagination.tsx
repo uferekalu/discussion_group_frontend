@@ -43,7 +43,7 @@ const Pagination: React.FC<IPagination> = ({
     for (let page = startPage; page <= endPage; page++) {
       buttons.push(
         <button
-          className={`flex justify-center p-1 w-10 items px-2-center rounded-lg text-xs text-white ${
+          className={`flex justify-center p-1 w-20 items px-2-center rounded-lg text-xs text-white ${
             page === currentPage ? "bg-red-300" : "bg-red-400"
           }`}
           key={page}
@@ -62,16 +62,16 @@ const Pagination: React.FC<IPagination> = ({
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
 
   return (
-    <div className="pagination">
+    <div className="w-full">
       {/* Render the items using the renderItem function */}
       {renderItem({ startIndex, endIndex })}
       <div className="flex flex-col space-y-2 p-1 pb-2 border rounded-lg bg-white shadow-lg justify-center items-center">
         <p className="text-black text-xs p-1 font-medium">
           Showing {startIndex + 1} - {endIndex} of {totalItems} items
         </p>
-        <div className="grid grid-cols-4 gap-3 p-2">
+        <div className="grid sm:grid-cols-1 lg:grid-cols-2 grid-cols-2 gap-3 p-2">
           <button
-            className={`flex justify-center p-1 items px-2-center rounded-lg text-xs text-white ${
+            className={`flex justify-center p-1 w-20 items px-2-center rounded-lg text-xs text-white ${
               currentPage === 1 ? "bg-red-300" : "bg-red-400"
             }`}
             onClick={() => onPageChange(currentPage - 1)}
@@ -81,7 +81,7 @@ const Pagination: React.FC<IPagination> = ({
           </button>
           {getPageButtons()}
           <button
-            className={`flex justify-center p-1 items px-2-center rounded-lg text-xs text-white ${
+            className={`flex justify-center p-1 w-20 items px-2-center rounded-lg text-xs text-white ${
               currentPage === totalPages ? "bg-red-300" : "bg-red-400"
             }`}
             onClick={() => onPageChange(currentPage + 1)}

@@ -14,7 +14,12 @@ import { Footer } from "@/components/footer";
 import GroupCard from "@/components/group/GroupCard";
 import { DecodedJwt, Item, allGroupItem } from "@/utils/interface";
 import jwtDecode from "jwt-decode";
-import { allGroups, getAGroup, getAllNotifications, joinAGroup } from "@/slices/groupSlice";
+import {
+  allGroups,
+  getAGroup,
+  getAllNotifications,
+  joinAGroup,
+} from "@/slices/groupSlice";
 import Pagination from "@/components/paginatedData/Pagination";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import PulseAnimation from "@/components/animations/PulseAnimations";
@@ -67,7 +72,7 @@ const Forum: NextPage = () => {
     openIsCreateGroup,
   } = Reusables();
 
-  console.log("all notifications", groups.allNotifications)
+  console.log("all notifications", groups.allNotifications);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -83,8 +88,8 @@ const Forum: NextPage = () => {
   };
 
   useEffect(() => {
-    dispatch(getAllNotifications())
-  }, [dispatch])
+    dispatch(getAllNotifications());
+  }, [dispatch]);
 
   useEffect(() => {
     const handleJoinGroupAction = async () => {
@@ -260,6 +265,15 @@ const Forum: NextPage = () => {
               notifications={groups.allNotifications}
               notificationStatus={groups.allNotificationsStatus}
               notificationError={groups.allNotificationsError}
+              groups={groups}
+              groupsToJoin={groupsToJoin}
+              openModal={openModal}
+              selectGroup={selectGroup}
+              handleGroupsUserBelongsTo={handleGroupsUserBelongsTo}
+              handleJoinAGroup={handleJoinAGroup}
+              belongsTo={belongsTo}
+              isJoinAGroup={isJoinAGroup}
+              isBelongTo={isBelongsTo}
             />
           }
         >
@@ -332,25 +346,10 @@ const Forum: NextPage = () => {
           <Section
             width="w-full"
             height="min-h-screen"
-            xPadding="px-4"
+            xPadding="px-1"
             yPadding="py-2"
             customBg="bg-white"
           >
-            {groups.groupStatus === "pending" && (
-              <PulseAnimation num={3} display="grid grid-cols-1 gap-4" />
-            )}
-            {groups.groupStatus === "success" && (
-              <GroupsToJoin
-                groupsToJoin={groupsToJoin}
-                openModal={openModal}
-                selectGroup={selectGroup}
-                handleGroupsUserBelongsTo={handleGroupsUserBelongsTo}
-                handleJoinAGroup={handleJoinAGroup}
-                belongsTo={belongsTo}
-                isJoinAGroup={isJoinAGroup}
-                isBelongTo={isBelongsTo}
-              />
-            )}
             {groups.groupStatus === "pending" && (
               <PulseAnimation num={3} display="grid grid-cols-1 gap-4" />
             )}

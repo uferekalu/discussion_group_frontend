@@ -9,7 +9,7 @@ import { loadUser } from '@/slices/authSlice';
 export default function App({ Component, pageProps }: AppProps) {
   // Load user when the application initializes
   useEffect(() => {
-    store.dispatch(loadUser(null))
+    store.dispatch(loadUser())
   }, [])
   return (
     <Provider store={store}>
